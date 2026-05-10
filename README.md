@@ -3,7 +3,7 @@
 **Multi-source crypto analytics pipeline + interactive dashboard**
 
 Built for the [Birdeye Data 4-Week BIP Competition Sprint 4](https://superteam.fun/earn/listing/birdeye-data-4-week-bip-competition-sprint-4)  
-💰 **$500 USDC** · Deadline: May 18, 2026
+💰 **$500 USDC** · Deadline: May 16, 2026
 
 ## 🆕 Sprint 4 vs Sprint 3
 
