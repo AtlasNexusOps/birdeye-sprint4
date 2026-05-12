@@ -33,19 +33,40 @@ graph TD
 ## 🚀 Quick Start
 
 ```bash
-# Install (zero extra deps)
-pip install -r requirements.txt
+# Clone + open (zero install needed for dashboard)
+git clone https://github.com/AtlasNexusOps/birdeye-sprint4.git
+cd birdeye-sprint4
 
-# Run with free sources
+# 🌐 Live Dashboard (works instantly)
+open enhanced_dashboard.html
+# Or visit: https://atlasnexusops.github.io/birdeye-sprint4/
+
+# 🐍 Run Python pipeline
+pip install -r requirements.txt
 python sprint4_pipeline.py
 
-# Run with Birdeye BDS
-python sprint4_pipeline.py --birdeye YOUR_API_KEY
+# 🔍 Token Discovery Engine
+python discovery_engine.py
 
 # Outputs in output/
 ```
 
-## 📊 What It Produces
+## ✨ New in v2 (May 12)
+
+### 🔮 Enhanced Live Dashboard (`enhanced_dashboard.html`)
+- **Live data** — fetches from CoinGecko API every 60s
+- **4 interactive charts** — Market Cap donut, Volatility bars, Top 10 bar chart, Momentum distribution
+- **Smart search** + 8 category filters (Gainers, Losers, Large/Mid/Small Cap, Hidden Gems, High Vol)
+- **Column sorting** — click any header
+- **Top 10 Gainers/Losers** with gold/silver/bronze rankings
+- **Smart Alerts** — auto-detects breakouts (>15%), crashes, unusual volume, hidden gems
+- **Responsive** — dark theme, works on mobile
+
+### 🔍 Discovery Engine (`discovery_engine.py`)
+- Real-time token radar (CoinGecko Trending + DEX Screener)
+- Breakout/crash detection with acceleration analysis
+- Unusual volume alerts (>3x average)
+- JSON export + human-readable alert feed (Telegram/Discord ready)
 
 ### 1. Token Dataset (100+ tokens)
 - Unified schema across CoinGecko, DEX Screener, Birdeye
@@ -67,14 +88,16 @@ python sprint4_pipeline.py --birdeye YOUR_API_KEY
 
 ## 📁 Deliverables Checklist
 
-- [x] Multi-source data pipeline
+- [x] Multi-source data pipeline (CoinGecko + DEX Screener + Birdeye BDS)
 - [x] Data cleaning & normalization
 - [x] Advanced enrichment & analytics
 - [x] Market intelligence & trend detection
 - [x] JSON + CSV + HTML Dashboard export
+- [x] **Live interactive dashboard** (Chart.js, search, filters, alerts)
+- [x] **Token Discovery Engine** (breakout/crash/volume alerts)
+- [x] **GitHub Pages deployed** — [atlasnexusops.github.io/birdeye-sprint4](https://atlasnexusops.github.io/birdeye-sprint4/)
 - [x] Zero dependencies beyond stdlib + requests
 - [x] Birdeye BDS integration (API key)
-- [x] DEX Screener trending integration
 - [x] Production-ready error handling
 
 ## 👤 Submission
