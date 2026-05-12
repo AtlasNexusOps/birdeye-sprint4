@@ -53,18 +53,6 @@ python discovery_engine.py
 
 ## ✨ New in v2 (May 12)
 
-### 🛢️📈💱 Markets Expansion — Commodities, Indices & Forex
-
-Three new pipelines + dashboards tracking traditional markets via Yahoo Finance:
-
-| Market | Assets | Pipeline | Dashboard |
-|--------|--------|----------|-----------|
-| 🛢️ Commodities | Gold, Silver, Oil, Copper, Wheat, Coffee... (15) | `commodities_pipeline.py` | `commodities_dashboard.html` |
-| 📈 Indices | S&P 500, Nasdaq, FTSE 100, DAX, Nikkei... (16) | `indices_pipeline.py` | `indices_dashboard.html` |
-| 💱 Forex | EUR/USD, GBP/JPY, USD/CHF... (19 pairs) | `forex_pipeline.py` | `forex_dashboard.html` |
-
-**Master pipeline** (`master_pipeline.py`) runs all 4 markets (Crypto + Commodities + Indices + Forex).
-
 ### 🔮 Enhanced Live Dashboard (`enhanced_dashboard.html`)
 - **Live data** — fetches from CoinGecko API every 60s
 - **4 interactive charts** — Market Cap donut, Volatility bars, Top 10 bar chart, Momentum distribution
