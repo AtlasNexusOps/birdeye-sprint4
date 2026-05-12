@@ -1,0 +1,141 @@
+{
+  "trending": [
+    {
+      "symbol": "FIRO",
+      "name": "Firo",
+      "mcap_rank": 818,
+      "score": 0,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "SAGA",
+      "name": "Saga",
+      "mcap_rank": 906,
+      "score": 1,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "BILL",
+      "name": "Billions Network",
+      "mcap_rank": 117,
+      "score": 2,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "PENGU",
+      "name": "Pudgy Penguins",
+      "mcap_rank": 96,
+      "score": 3,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "ZANO",
+      "name": "Zano",
+      "mcap_rank": 204,
+      "score": 4,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "WOJAK",
+      "name": "wojak",
+      "mcap_rank": 610,
+      "score": 5,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "LAB",
+      "name": "LAB",
+      "mcap_rank": 140,
+      "score": 6,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "TON",
+      "name": "Toncoin",
+      "mcap_rank": 20,
+      "score": 7,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "VVV",
+      "name": "Venice Token",
+      "mcap_rank": 87,
+      "score": 8,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "HYPE",
+      "name": "Hyperliquid",
+      "mcap_rank": 14,
+      "score": 9,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "OSMO",
+      "name": "Osmosis",
+      "mcap_rank": 527,
+      "score": 10,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "ZEC",
+      "name": "Zcash",
+      "mcap_rank": 16,
+      "score": 11,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "NEAR",
+      "name": "NEAR Protocol",
+      "mcap_rank": 45,
+      "score": 12,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "MEGA",
+      "name": "MegaETH",
+      "mcap_rank": 256,
+      "score": 13,
+      "source": "coingecko_trending"
+    },
+    {
+      "symbol": "ASTEROID",
+      "name": "Asteroid Shiba",
+      "mcap_rank": 257,
+      "score": 14,
+      "source": "coingecko_trending"
+    }
+  ],
+  "dex_trending": [],
+  "alerts": [
+    {
+      "symbol": "RAD",
+      "name": "Radworks",
+      "type": "CRASH",
+      "reasons": [
+        "-10.7% 24h, -7.4% 1h (continuing)"
+      ],
+      "price_usd": 0.297163,
+      "change_24h": -10.72924,
+      "change_1h": -7.4034606631003115,
+      "volume_24h": 89375668,
+      "market_cap": 14816932,
+      "timestamp": "2026-05-12T20:58:24.701665"
+    },
+    {
+      "symbol": "SD",
+      "name": "Stader",
+      "type": "BREAKOUT",
+      "reasons": [
+        "+60.9% 24h, +18.4% 1h (acceleration)"
+      ],
+      "price_usd": 0.239099,
+      "change_24h": 60.92954,
+      "change_1h": 18.351941913285412,
+      "volume_24h": 56561761,
+      "market_cap": 17015812,
+      "timestamp": "2026-05-12T20:58:24.701693"
+    }
+  ],
+  "generated_at": "20260512-205824"
+}
