@@ -345,7 +345,8 @@ def compute_market_summary(data: list, hawkeye_analyses: list = None) -> dict:
         "market_cap_distribution": {t: tiers.count(t) for t in set(tiers)},
         "top_gainers": gainers,
         "top_losers": losers,
-        "unusual_volume_tokens": unusual[:10],
+        "unusual_volume_tokens": unusual[:10],  # legacy field: absolute volume > 2x average
+        "volume_share_tokens": sorted(data, key=lambda x: x.get("volume_24h", 0) or 0, reverse=True)[:10],
         "total_market_cap": sum(t.get("market_cap", 0) or 0 for t in data),
         "avg_24h_change": round(sum(t.get("change_24h", 0) or 0 for t in data) / len(data), 2) if data else 0,
         "generated_at": NOW
@@ -458,7 +459,7 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
         f"<td>${(uv.get('volume_24h',0) or 0):,.0f}</td>"
         f"<td>${((uv.get('market_cap',0) or 0))/1e6:.1f}M</td>"
         f"<td>{uv.get('volume_mcap_ratio',0):.2%}</td></tr>"
-        for uv in summary.get('unusual_volume_tokens', [])[:5]
+        for uv in summary.get('volume_share_tokens', summary.get('unusual_volume_tokens', []))[:5]
     )
     hawk_cards = f"""
     <div class="card">
@@ -534,14 +535,17 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
         .header h1{{
             display:flex;flex-direction:column;align-items:center;gap:10px;
             font-size:clamp(2.7rem,7vw,5.8rem);font-weight:900;line-height:.94;
-            background:linear-gradient(135deg, #fff, var(--accent), var(--accent2));
-            -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
             letter-spacing:-0.085em;
         }}
         .header h1 .title-orb{{
             display:block;font-size:clamp(4.2rem,11vw,8.4rem);line-height:.82;letter-spacing:0;
-            -webkit-text-fill-color:initial;background:none;
+            color:#f0f7ff;background:none;-webkit-text-fill-color:initial;
             filter:drop-shadow(0 0 28px rgba(129,140,248,.55)) drop-shadow(0 0 52px rgba(56,189,248,.30));
+        }}
+        .header h1 .title-text{{
+            display:block;background:linear-gradient(135deg,#ffffff 0%,#bae6fd 30%,#38bdf8 58%,#818cf8 100%);
+            -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+            text-shadow:0 0 34px rgba(56,189,248,.18);
         }}
         .header .subtitle{{color:var(--muted);margin-top:10px;font-size:1.08em}}
         .live-badge{{
@@ -605,11 +609,11 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
 </head>
 <body>
     <div class="header">
-        <h1><span class="title-orb">🔮</span><span>Atlas Nexus — Birdeye Sprint 4</span></h1>
+        <h1><span class="title-orb">🔮</span><span class="title-text">Atlas Nexus — Birdeye Sprint 4</span></h1>
         <p class="subtitle">Hawkeye V4 Market Pressure Radar · Multi-source crypto intelligence pipeline</p>
-        <div class="live-badge"><span class="live-dot"></span>Live · {NOW}</div>
+        <div class="live-badge"><span class="live-dot"></span>Live</div>
         <div class="sentiment-pill" style="background:rgba({ '34,197,94' if 'BULLISH' in agg.get('direction','') else '239,68,68' if 'BEARISH' in agg.get('direction','') else '245,158,11' },0.15);color:{sentiment_color}">
-            {agg.get('direction','NEUTRAL')} · {agg.get('confidence','—')}% confidence
+            {agg.get('direction','NEUTRAL')} MARKET MOMENTUM · {agg.get('confidence','—')}% confidence
         </div>
     </div>
     
@@ -689,11 +693,11 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
             </div>
         </div>''' if hk else ''}
         
-        <!-- Unusual Volume -->
-        {f'''<h2>⚠️ Unusual Volume ({len(summary.get('unusual_volume_tokens',[]))} tokens)</h2>
-        <table><tr><th>Token</th><th>Volume</th><th>Mcap</th><th>Ratio</th></tr>
+        <!-- Volume / market-share leaders -->
+        {f'''<h2>🌊 Volume / Market Share Leaders ({len(summary.get('volume_share_tokens', summary.get('unusual_volume_tokens', [])))} tokens)</h2>
+        <table><tr><th>Token</th><th>Volume</th><th>Mcap</th><th>Vol/MCap</th></tr>
         {unusual_volume_rows}
-        </table>''' if summary.get('unusual_volume_tokens') else ''}
+        </table>''' if summary.get('volume_share_tokens', summary.get('unusual_volume_tokens')) else ''}
     </div>
     
     <div class="footer">

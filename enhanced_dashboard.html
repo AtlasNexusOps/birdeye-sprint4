@@ -45,13 +45,17 @@
             display:flex;flex-direction:column;align-items:center;gap:10px;
             font-size:clamp(2.7rem,7vw,5.8rem);font-weight:900;line-height:.94;
             background:linear-gradient(135deg, #fff, var(--accent), var(--accent2));
-            -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
             letter-spacing:-0.085em;
         }
         .header h1 .title-orb{
             display:block;font-size:clamp(4.2rem,11vw,8.4rem);line-height:.82;letter-spacing:0;
-            -webkit-text-fill-color:initial;background:none;
+            color:#f0f7ff;background:none;-webkit-text-fill-color:initial;
             filter:drop-shadow(0 0 28px rgba(129,140,248,.55)) drop-shadow(0 0 52px rgba(56,189,248,.30));
+        }
+        .header h1 .title-text{
+            display:block;background:linear-gradient(135deg,#ffffff 0%,#bae6fd 30%,#38bdf8 58%,#818cf8 100%);
+            -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+            text-shadow:0 0 34px rgba(56,189,248,.18);
         }
         .header .subtitle{color:var(--muted);margin-top:10px;font-size:1.08em}
         .live-badge{
@@ -115,11 +119,11 @@
 </head>
 <body>
     <div class="header">
-        <h1><span class="title-orb">🔮</span><span>Atlas Nexus — Birdeye Sprint 4</span></h1>
+        <h1><span class="title-orb">🔮</span><span class="title-text">Atlas Nexus — Birdeye Sprint 4</span></h1>
         <p class="subtitle">Hawkeye V4 Market Pressure Radar · Multi-source crypto intelligence pipeline</p>
-        <div class="live-badge"><span class="live-dot"></span>Live · 20260515-152611</div>
+        <div class="live-badge"><span class="live-dot"></span>Live</div>
         <div class="sentiment-pill" style="background:rgba(239,68,68,0.15);color:#ef4444">
-            BEARISH · 37% confidence
+            BEARISH MARKET MOMENTUM · 37% confidence
         </div>
     </div>
     
@@ -950,9 +954,9 @@
             </div>
         </div>
         
-        <!-- Unusual Volume -->
-        <h2>⚠️ Unusual Volume (5 tokens)</h2>
-        <table><tr><th>Token</th><th>Volume</th><th>Mcap</th><th>Ratio</th></tr>
+        <!-- Volume / market-share leaders -->
+        <h2>🌊 Volume / Market Share Leaders (5 tokens)</h2>
+        <table><tr><th>Token</th><th>Volume</th><th>Mcap</th><th>Vol/MCap</th></tr>
         <tr><td><strong>BTC</strong></td><td>$45,335,580,377</td><td>$1605184.3M</td><td>2.82%</td></tr><tr><td><strong>ETH</strong></td><td>$19,298,692,227</td><td>$271406.1M</td><td>7.11%</td></tr><tr><td><strong>USDT</strong></td><td>$75,495,066,783</td><td>$189801.4M</td><td>39.78%</td></tr><tr><td><strong>XRP</strong></td><td>$4,125,021,685</td><td>$90068.7M</td><td>4.58%</td></tr><tr><td><strong>USDC</strong></td><td>$17,314,864,702</td><td>$76527.8M</td><td>22.63%</td></tr>
         </table>
     </div>
