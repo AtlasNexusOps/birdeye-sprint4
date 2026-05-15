@@ -1,2 +1,3 @@
 # Birdeye Sprint 4 — Zero extra deps beyond Python stdlib
-# requests is optional (stdlib urllib used by default)
+# urllib is used for all HTTP (no requests needed)
+# statistics is stdlib (used by sentiment/compute_sentiment)

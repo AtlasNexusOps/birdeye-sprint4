@@ -1,19 +1,37 @@
-# 🚀 Atlas Nexus — Birdeye Data BIP Sprint 4
+# 🦅 Atlas Nexus — Birdeye Data BIP Sprint 4 Enhanced
 
-**Multi-source crypto analytics pipeline + interactive dashboard**
+**Multi-source crypto analytics pipeline + Hawkeye V4 Market Pressure Radar**
 
 Built for the [Birdeye Data 4-Week BIP Competition Sprint 4](https://superteam.fun/earn/listing/birdeye-data-4-week-bip-competition-sprint-4)  
 💰 **$500 USDC** · Deadline: May 16, 2026
 
-## 🆕 Sprint 4 vs Sprint 3
+## 🆕 Sprint 4 Enhanced — Hawkeye V4 Integration
 
-| Feature | Sprint 3 | Sprint 4 |
-|---------|----------|----------|
-| Sources | CoinGecko + Birdeye | **+ DEX Screener + Trending** |
-| Enrichment | Volatility + MCap tiers | **+ Momentum scoring + Unusual volume** |
-| Market Intel | Basic stats | **+ Sentiment analysis + Trend detection** |
-| Export | JSON + CSV | **+ Interactive HTML Dashboard** |
-| Token Discovery | None | **+ Top gainers/losers + Hidden gems** |
+| Feature | Sprint 3 | Sprint 4 | **Enhanced** |
+|---------|----------|----------|-------------|
+| Sources | CoinGecko + Birdeye | + DEX Screener + Trending | Same |
+| Enrichment | Volatility + MCap tiers | + Momentum + Unusual volume | **+ Hawkeye V4 pressure radar** |
+| Technical Analysis | None | Basic trend detection | **EMA/RSI/MACD/ATR/nROC** |
+| Scoring | Simple momentum | Trend classification | **0-100 pressure score per token** |
+| Dashboard | Basic stats | Interactive HTML | **Premium theme + Hawkeye scanner** |
+| Alerts | None | Gainers/losers | **Extension/RSI/volatility alerts** |
+
+## 🦅 Hawkeye V4 — Market Pressure Radar
+
+Hawkeye V4 analyzes each token through 7 signal families:
+
+| Family | Weight | What it measures |
+|--------|--------|-----------------|
+| **Trend** | 25% | EMA alignment, MACD histogram |
+| **Momentum** | 25% | RSI, normalized RoC (5 & 20 period) |
+| **Volatility** | 20% | ATR percentile, extension from mean |
+| **Volume** | 15% | Volume confirmation |
+| **Pattern** | 10% | Price structure |
+| **Sentiment** | 3% | Breadth/participation |
+| **Quality** | 2% | Data completeness |
+
+**Doctrine:** Regime first → pressure second → signal family third → score last.  
+Hawkeye is a market-pressure radar, **not a trade placement tool**.
 
 ## 🏗️ Architecture
 
@@ -23,26 +41,25 @@ graph TD
     B[DEX Screener] --> D
     C[Birdeye BDS] --> D
     D --> E[Clean & Dedup]
-    E --> F[Enrich]
-    F --> G[Analyze]
-    G --> H1[JSON]
-    G --> H2[CSV]
-    G --> H3[HTML Dashboard]
+    E --> F[Enrich: volatility, momentum, volume]
+    F --> G[🦅 Hawkeye V4: analyze_assets]
+    G --> H1[JSON + Hawkeye fields]
+    G --> H2[CSV with pressure scores]
+    G --> H3[Premium HTML + Scanner]
+    G --> H4[Unusual Activity Alerts]
 ```
 
 ## 🚀 Quick Start
 
 ```bash
-# Clone + open (zero install needed for dashboard)
 git clone https://github.com/AtlasNexusOps/birdeye-sprint4.git
 cd birdeye-sprint4
 
-# 🌐 Live Dashboard (works instantly)
+# 🌐 Live Dashboard (browser, zero install)
 open enhanced_dashboard.html
 # Or visit: https://atlasnexusops.github.io/birdeye-sprint4/
 
-# 🐍 Run Python pipeline
-pip install -r requirements.txt
+# 🐍 Run Python pipeline (zero deps beyond stdlib)
 python sprint4_pipeline.py
 
 # 🔍 Token Discovery Engine
@@ -51,57 +68,74 @@ python discovery_engine.py
 # Outputs in output/
 ```
 
-## ✨ New in v2 (May 12)
+## 📊 What the Pipeline Produces
 
-### 🔮 Enhanced Live Dashboard (`enhanced_dashboard.html`)
-- **Live data** — fetches from CoinGecko API every 60s
-- **4 interactive charts** — Market Cap donut, Volatility bars, Top 10 bar chart, Momentum distribution
-- **Smart search** + 8 category filters (Gainers, Losers, Large/Mid/Small Cap, Hidden Gems, High Vol)
-- **Column sorting** — click any header
-- **Top 10 Gainers/Losers** with gold/silver/bronze rankings
-- **Smart Alerts** — auto-detects breakouts (>15%), crashes, unusual volume, hidden gems
-- **Responsive** — dark theme, works on mobile
+| File | Contents |
+|------|----------|
+| `tokens_full_{ts}.json` | All tokens with Hawkeye pressure scores, regimes, signal families |
+| `summary_{ts}.json` | Market summary + Hawkeye aggregate stats |
+| `tokens_{ts}.csv` | Flat CSV with pressure_score, pressure_direction, h_rsi, h_nroc5 |
+| `dashboard_{ts}.html` | Premium HTML dashboard with Hawkeye V4 scanner embedded |
 
-### 🔍 Discovery Engine (`discovery_engine.py`)
-- Real-time token radar (CoinGecko Trending + DEX Screener)
-- Breakout/crash detection with acceleration analysis
-- Unusual volume alerts (>3x average)
-- JSON export + human-readable alert feed (Telegram/Discord ready)
+## 🗂️ File Map
 
-### 1. Token Dataset (100+ tokens)
-- Unified schema across CoinGecko, DEX Screener, Birdeye
-- Cleaned, deduplicated, nulls handled
-- Enriched with volatility, momentum, volume flags
+```
+birdeye-sprint4/
+├── sprint4_pipeline.py      # Main enhanced pipeline (Hawkeye V4 integrated)
+├── hawkeye_core.py          # 🦅 Hawkeye V4 market pressure radar core
+├── sentiment.py             # Pressure visualization & scanner HTML components
+├── dashboard_theme.py       # Premium Atlas Nexus CSS theme
+├── bds_pipeline.py          # BDS data pipeline (legacy)
+├── discovery_engine.py      # Token discovery (trending, breakouts, gems)
+├── scanner_generator.py     # Dynamic scanner HTML generation
+├── scanner_inject.py        # Scanner injection into dashboard
+├── live_streamer.py         # Real-time price streamer (Yahoo Finance)
+├── enhanced_dashboard.html  # Live interactive dashboard (Chart.js)
+├── index.html               # Landing page with scanner placeholders
+├── requirements.txt         # Zero extra deps (stdlib only)
+└── output/                  # Generated exports
+```
 
-### 2. Market Intelligence
-- Sentiment analysis (STRONG_UP → STRONG_DOWN)
-- Unusual volume detection
-- Market cap distribution
-- Top gainers/losers
+## ✨ Key Features
 
-### 3. Interactive HTML Dashboard
-- Real-time token leaderboard
-- Color-coded performance
-- Gainers vs losers section
-- Unusual volume alerts
-- Responsive design (mobile-friendly)
+### 🦅 Hawkeye V4 Integration
+- **7 signal families** weighted scoring per token
+- **Pressure direction**: bullish / bearish / neutral
+- **Extension warnings**: ATR-based over-extension detection
+- **Regime classification**: trend, momentum, compression, volatile
+- **nROC5/nROC20**: normalized rate of change for cross-asset comparison
+
+### 🔮 Enhanced Dashboard
+- Live data from CoinGecko API (auto-refresh)
+- **4 interactive Chart.js charts**
+- **Hawkeye V4 pressure scanner** with bullish/bearish boards
+- Smart search + 8 category filters
+- Column sorting, responsive design
+- Unusual activity alerts (extension, RSI, volatility)
+
+### 🔍 Discovery Engine
+- CoinGecko Trending + DEX Screener Latest
+- Breakout (>15%) / Crash (<-15%) detection
+- Unusual volume alerts (>3σ)
+- JSON export + human-readable alert feed
 
 ## 📁 Deliverables Checklist
 
-- [x] Multi-source data pipeline (CoinGecko + DEX Screener + Birdeye BDS)
+- [x] Multi-source pipeline (CoinGecko + DEX Screener + Birdeye BDS)
 - [x] Data cleaning & normalization
-- [x] Advanced enrichment & analytics
-- [x] Market intelligence & trend detection
-- [x] JSON + CSV + HTML Dashboard export
-- [x] **Live interactive dashboard** (Chart.js, search, filters, alerts)
-- [x] **Token Discovery Engine** (breakout/crash/volume alerts)
-- [x] **GitHub Pages deployed** — [atlasnexusops.github.io/birdeye-sprint4](https://atlasnexusops.github.io/birdeye-sprint4/)
-- [x] Zero dependencies beyond stdlib + requests
+- [x] Advanced enrichment & momentum scoring
+- [x] **🦅 Hawkeye V4 market pressure radar (EMA/RSI/MACD/ATR/nROC)**
+- [x] Market intelligence & sentiment
+- [x] JSON + CSV + **Premium HTML Dashboard** export
+- [x] Live interactive dashboard (Chart.js, search, filters, alerts)
+- [x] Token Discovery Engine (breakout/crash/volume alerts)
+- [x] GitHub Pages deployed
+- [x] Zero dependencies beyond Python stdlib
 - [x] Birdeye BDS integration (API key)
-- [x] Production-ready error handling
 
 ## 👤 Submission
 
 **Author:** Atlas Nexus (AtlasNexusOps)  
 **Contact:** atlasnexus.ops@proton.me  
 **Sprint 3 Ref:** https://github.com/AtlasNexusOps/birdeye-sprint
+**Markets Dashboard:** https://github.com/AtlasNexusOps/markets-dashboard
