@@ -1,6 +1,0 @@
-🦅 **Veille 15:17 UTC** | 54 alertes
-
-⚠️ **SURVEILLANCE (3)**
-  ⚡ SUI | 35/100 | 💡 RSI 15 survente potentielle · 💧 Vol/Mcap 19.4%
-  ⚡ XAUT | 38/100 | 💡 RSI 19 survente potentielle · 💧 Vol/Mcap 13.2%
-  ⚡ PAXG | 38/100 | 💡 RSI 21 survente potentielle · 💧 Vol/Mcap 11.9%
