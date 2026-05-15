@@ -441,6 +441,25 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
     
     # Hawkeye summary cards
     hk = summary.get("hawkeye", {})
+    bullish_pressure_rows = "".join(
+        f"<tr><td><strong>{b.get('symbol','?')}</strong></td>"
+        f"<td style=\"color:#22c55e;font-weight:700\">{b.get('pressure_score',0):.0f}/100</td>"
+        f"<td><small>{b.get('signal_family','')[:20]}</small></td></tr>"
+        for b in hk.get('top_bullish', [])[:5]
+    )
+    bearish_pressure_rows = "".join(
+        f"<tr><td><strong>{b.get('symbol','?')}</strong></td>"
+        f"<td style=\"color:#ef4444;font-weight:700\">{b.get('pressure_score',0):.0f}/100</td>"
+        f"<td><small>{b.get('signal_family','')[:20]}</small></td></tr>"
+        for b in hk.get('top_bearish', [])[:5]
+    )
+    unusual_volume_rows = "".join(
+        f"<tr><td><strong>{uv.get('symbol','?')}</strong></td>"
+        f"<td>${(uv.get('volume_24h',0) or 0):,.0f}</td>"
+        f"<td>${((uv.get('market_cap',0) or 0))/1e6:.1f}M</td>"
+        f"<td>{uv.get('volume_mcap_ratio',0):.2%}</td></tr>"
+        for uv in summary.get('unusual_volume_tokens', [])[:5]
+    )
     hawk_cards = f"""
     <div class="card">
         <div class="value" style="color:#818cf8">{hk.get('avg_pressure_score','—')}</div>
@@ -652,14 +671,14 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
                 <h2>🟢 Top Bullish Pressure</h2>
                 <table>
                     <tr><th>Token</th><th>Score</th><th>Signal</th></tr>
-                    {''.join(f'''<tr><td><strong>{b['symbol']}</strong></td><td style="color:#22c55e;font-weight:700">{b.get('pressure_score',0):.0f}/100</td><td><small>{b.get('signal_family','')[:20]}</small></td></tr>''' for b in hk.get('top_bullish',[])[:5])}
+                    {bullish_pressure_rows}
                 </table>
             </div>
             <div>
                 <h2>🔴 Top Bearish Pressure</h2>
                 <table>
                     <tr><th>Token</th><th>Score</th><th>Signal</th></tr>
-                    {''.join(f'''<tr><td><strong>{b['symbol']}</strong></td><td style="color:#ef4444;font-weight:700">{b.get('pressure_score',0):.0f}/100</td><td><small>{b.get('signal_family','')[:20]}</small></td></tr>''' for b in hk.get('top_bearish',[])[:5])}
+                    {bearish_pressure_rows}
                 </table>
             </div>
         </div>''' if hk else ''}
@@ -667,7 +686,7 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
         <!-- Unusual Volume -->
         {f'''<h2>⚠️ Unusual Volume ({len(summary.get('unusual_volume_tokens',[]))} tokens)</h2>
         <table><tr><th>Token</th><th>Volume</th><th>Mcap</th><th>Ratio</th></tr>
-        {''.join(f'<tr><td><strong>{uv["symbol"]}</strong></td><td>${(uv.get("volume_24h",0) or 0):,.0f}</td><td>${((uv.get("market_cap",0) or 0))/1e6:.1f}M</td><td>{uv.get("volume_mcap_ratio",0):.2%}</td></tr>' for uv in summary.get('unusual_volume_tokens',[])[:5])}
+        {unusual_volume_rows}
         </table>''' if summary.get('unusual_volume_tokens') else ''}
     </div>
     
@@ -680,6 +699,17 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
     
     with open(path, 'w') as f:
         f.write(html)
+
+    # GitHub Pages serves index.html. Keep the live artifact in sync with the
+    # generated Sprint 4 dashboard so future pipeline runs cannot leave Pages
+    # pointing at a stale/corrupted placeholder. enhanced_dashboard.html is kept
+    # as a compatibility alias used by the README and older links.
+    for live_name in ("index.html", "enhanced_dashboard.html"):
+        live_path = Path(live_name)
+        with open(live_path, 'w') as f:
+            f.write(html)
+        print(f"✅ Live HTML: {live_path} ({os.path.getsize(live_path)} bytes)")
+
     print(f"✅ HTML Dashboard: {path} ({os.path.getsize(path)} bytes)")
 
 # ════════════════════════════════════════════════════════════

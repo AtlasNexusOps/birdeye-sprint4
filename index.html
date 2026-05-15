@@ -1,509 +1,959 @@
-     1|<!DOCTYPE html>
-     2|<html lang="en">
-     3|<head>
-     4|<meta charset="UTF-8">
-     5|<meta name="viewport" content="width=device-width, initial-scale=1.0">
-     6|<title>🔮 Atlas Nexus — Token Intelligence Dashboard | Birdeye Sprint 4</title>
-     7|<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-     8|<style>
-     9|  :root {
-    10|    --bg: #080b16;
-    11|    --card: #0f1420;
-    12|    --border: #1a2040;
-    13|    --accent: #38bdf8;
-    14|    --accent2: #818cf8;
-    15|    --green: #22c55e;
-    16|    --red: #ef4444;
-    17|    --text: #e2e8f0;
-    18|    --muted: #64748b;
-    19|    --orange: #f59e0b;
-    20|  }
-    21|  * { margin:0; padding:0; box-sizing:border-box; }
-    22|  body {
-    23|    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    24|    background: var(--bg);
-    25|    color: var(--text);
-    26|    min-height: 100vh;
-    27|    background-image:
-    28|      radial-gradient(ellipse at 20% 0%, rgba(56,189,248,0.08) 0%, transparent 50%),
-    29|      radial-gradient(ellipse at 80% 100%, rgba(129,140,248,0.05) 0%, transparent 50%);
-    30|  }
-    31|
-    32|  /* ── Header ── */
-    33|  .header {
-    34|    text-align: center;
-    35|    padding: 40px 20px 30px;
-    36|    border-bottom: 1px solid var(--border);
-    37|    background: linear-gradient(180deg, rgba(15,20,40,0.9), transparent);
-    38|  }
-    39|  .header h1 {
-    40|    font-size: 2.4em;
-    41|    font-weight: 800;
-    42|    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    43|    -webkit-background-clip: text;
-    44|    -webkit-text-fill-color: transparent;
-    45|    letter-spacing: -0.5px;
-    46|  }
-    47|  .header .subtitle {
-    48|    color: var(--muted);
-    49|    margin-top: 8px;
-    50|    font-size: 1em;
-    51|  }
-    52|  .live-badge {
-    53|    display: inline-block;
-    54|    background: rgba(34,197,94,0.15);
-    55|    color: var(--green);
-    56|    padding: 4px 12px;
-    57|    border-radius: 20px;
-    58|    font-size: 0.85em;
-    59|    font-weight: 600;
-    60|    margin-top: 10px;
-    61|    animation: pulse 2s infinite;
-    62|  }
-    63|  .live-dot { display:inline-block; width:8px; height:8px; background:var(--green); border-radius:50%; margin-right:6px; }
-    64|  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
-    65|
-    66|  /* ── Layout ── */
-    67|  .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-    68|
-    69|  /* ── Stat Cards ── */
-    70|  .stats-grid {
-    71|    display: grid;
-    72|    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    73|    gap: 16px;
-    74|    margin-bottom: 24px;
-    75|  }
-    76|  .stat-card {
-    77|    background: var(--card);
-    78|    border: 1px solid var(--border);
-    79|    border-radius: 14px;
-    80|    padding: 24px;
-    81|    position: relative;
-    82|    overflow: hidden;
-    83|    transition: transform 0.2s, border-color 0.2s;
-    84|  }
-    85|  .stat-card:hover { transform: translateY(-2px); border-color: var(--accent); }
-    86|  .stat-card .icon { font-size: 1.5em; margin-bottom: 8px; }
-    87|  .stat-card .value { font-size: 2.2em; font-weight: 800; letter-spacing: -1px; }
-    88|  .stat-card .label { color: var(--muted); font-size: 0.9em; margin-top: 4px; }
-    89|  .stat-card .delta { font-size: 0.85em; margin-top: 4px; }
-    90|
-    91|  /* ── Search & Filters ── */
-    92|  .controls {
-    93|    display: flex;
-    94|    gap: 12px;
-    95|    margin-bottom: 20px;
-    96|    flex-wrap: wrap;
-    97|    align-items: center;
-    98|  }
-    99|  .search-box {
-   100|    flex: 1;
-   101|    min-width: 250px;
-   102|    padding: 12px 18px;
-   103|    border-radius: 12px;
-   104|    border: 1px solid var(--border);
-   105|    background: var(--card);
-   106|    color: var(--text);
-   107|    font-size: 1em;
-   108|    outline: none;
-   109|    transition: border-color 0.2s;
-   110|  }
-   111|  .search-box:focus { border-color: var(--accent); }
-   112|  .filter-btn {
-   113|    padding: 10px 18px;
-   114|    border-radius: 10px;
-   115|    border: 1px solid var(--border);
-   116|    background: var(--card);
-   117|    color: var(--text);
-   118|    cursor: pointer;
-   119|    font-size: 0.9em;
-   120|    transition: all 0.2s;
-   121|    white-space: nowrap;
-   122|  }
-   123|  .filter-btn:hover, .filter-btn.active {
-   124|    border-color: var(--accent);
-   125|    background: rgba(56,189,248,0.1);
-   126|    color: var(--accent);
-   127|  }
-   128|
-   129|  /* ── Table ── */
-   130|  .table-wrapper {
-   131|    background: var(--card);
-   132|    border: 1px solid var(--border);
-   133|    border-radius: 14px;
-   134|    overflow: hidden;
-   135|    margin-bottom: 24px;
-   136|  }
-   137|  table {
-   138|    width: 100%;
-   139|    border-collapse: collapse;
-   140|    font-size: 0.92em;
-   141|  }
-   142|  th {
-   143|    background: rgba(15,20,40,0.6);
-   144|    padding: 14px 16px;
-   145|    text-align: left;
-   146|    font-weight: 600;
-   147|    color: var(--accent);
-   148|    font-size: 0.82em;
-   149|    text-transform: uppercase;
-   150|    letter-spacing: 0.5px;
-   151|    cursor: pointer;
-   152|    user-select: none;
-   153|    white-space: nowrap;
-   154|  }
-   155|  th:hover { color: var(--accent2); }
-   156|  td { padding: 12px 16px; border-bottom: 1px solid rgba(26,32,64,0.5); }
-   157|  tr:hover { background: rgba(56,189,248,0.03); }
-   158|  .token-cell { display:flex; align-items:center; gap:10px; }
-   159|  .token-icon { width:32px; height:32px; border-radius:50%; background:var(--border); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8em; }
-   160|  .token-name { font-weight:600; }
-   161|  .token-symbol { color:var(--muted); font-size:0.85em; }
-   162|  .price { font-weight:600; font-variant-numeric: tabular-nums; }
-   163|  .change-positive { color:var(--green); }
-   164|  .change-negative { color:var(--red); }
-   165|
-   166|  /* ── Charts ── */
-   167|  .charts-grid {
-   168|    display: grid;
-   169|    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-   170|    gap: 20px;
-   171|    margin-bottom: 24px;
-   172|  }
-   173|  .chart-card {
-   174|    background: var(--card);
-   175|    border: 1px solid var(--border);
-   176|    border-radius: 14px;
-   177|    padding: 24px;
-   178|  }
-   179|  .chart-card h3 {
-   180|    font-size: 1.1em;
-   181|    margin-bottom: 16px;
-   182|    color: var(--accent);
-   183|  }
-   184|  .chart-container { position: relative; height: 280px; }
-   185|
-   186|  /* ── Gainers/Losers ── */
-   187|  .gainers-losers {
-   188|    display: grid;
-   189|    grid-template-columns: 1fr 1fr;
-   190|    gap: 20px;
-   191|    margin-bottom: 24px;
-   192|  }
-   193|  @media (max-width: 768px) { .gainers-losers { grid-template-columns: 1fr; } }
-   194|
-   195|  .gl-card {
-   196|    background: var(--card);
-   197|    border: 1px solid var(--border);
-   198|    border-radius: 14px;
-   199|    padding: 20px;
-   200|  }
-   201|  .gl-card h3 { margin-bottom: 14px; font-size: 1.05em; }
-   202|  .gl-item {
-   203|    display: flex;
-   204|    justify-content: space-between;
-   205|    align-items: center;
-   206|    padding: 10px 0;
-   207|    border-bottom: 1px solid rgba(26,32,64,0.4);
-   208|  }
-   209|  .gl-item:last-child { border-bottom: none; }
-   210|  .gl-rank { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85em; }
-   211|  .rank-gold { background:rgba(245,158,11,0.15); color:var(--orange); }
-   212|  .rank-silver { background:rgba(148,163,184,0.15); color:#94a3b8; }
-   213|  .rank-bronze { background:rgba(180,83,9,0.15); color:#b45309; }
-   214|  .rank-normal { background:var(--border); color:var(--muted); }
-   215|
-   216|  /* ── Alerts Section ── */
-   217|  .alerts-section {
-   218|    background: var(--card);
-   219|    border: 1px solid var(--border);
-   220|    border-radius: 14px;
-   221|    padding: 20px 24px;
-   222|    margin-bottom: 24px;
-   223|  }
-   224|  .alerts-section h3 { color: var(--orange); margin-bottom: 12px; }
-   225|  .alert-item {
-   226|    display: flex;
-   227|    align-items: center;
-   228|    gap: 12px;
-   229|    padding: 10px;
-   230|    margin: 6px 0;
-   231|    background: rgba(245,158,11,0.05);
-   232|    border-radius: 8px;
-   233|    border-left: 3px solid var(--orange);
-   234|  }
-   235|  .alert-token { font-weight:600; min-width:80px; }
-   236|  .alert-desc { color: var(--muted); font-size:0.9em; }
-   237|  .alert-value { margin-left:auto; font-weight:600; font-variant-numeric: tabular-nums; }
-   238|
-   239|  /* ── Footer ── */
-   240|  .footer {
-   241|    text-align: center;
-   242|    padding: 30px;
-   243|    color: var(--muted);
-   244|    font-size: 0.85em;
-   245|    border-top: 1px solid var(--border);
-   246|  }
-   247|
-   248|  .hidden { display: none; }
-   249|  .loading { text-align:center; padding:60px; color:var(--muted); }
-   250|  .error-banner {
-   251|    background: rgba(239,68,68,0.1);
-   252|    border: 1px solid rgba(239,68,68,0.3);
-   253|    border-radius: 10px;
-   254|    padding: 12px 20px;
-   255|    margin-bottom: 20px;
-   256|    color: var(--red);
-   257|    display: none;
-   258|  }
-   259|</style>
-   260|</head>
-   261|<body>
-   262|
-   263|<div class="header">
-   264|  <h1>🔮 Atlas Nexus — Token Intelligence</h1>
-   265|  <p class="subtitle">Multi-source crypto analytics · CoinGecko + DEX Screener + Birdeye BDS</p>
-   266|  <div class="live-badge"><span class="live-dot"></span>Live · <span id="lastUpdate">loading...</span></div>
-   267|</div>
-   268|
-   269|<div class="container">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦅 Atlas Nexus — Birdeye Sprint 4 + Hawkeye V4</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
 
-    <!-- 🦅 HAWKEYE V4 SCANNER (injected at pipeline runtime) -->
-    <section id="scanner" class="scanner">
-    </section>
+        /* ATLAS_PREMIUM_DASHBOARD_THEME_V1 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        :root{
+            --atlas-bg:#070914;
+            --atlas-panel:rgba(15,20,32,.74);
+            --atlas-panel-strong:rgba(18,24,38,.92);
+            --atlas-border:rgba(148,163,184,.16);
+            --atlas-border-strong:rgba(255,255,255,.14);
+            --atlas-text:#f8fafc;
+            --atlas-muted:#b6c2d6;
+            --atlas-faint:#8290a6;
+            --atlas-green:#22c55e;
+            --atlas-red:#ef4444;
+            --atlas-amber:#f59e0b;
+            --atlas-accent:#38bdf8;
+            --atlas-accent2:#818cf8;
+            --bg:#080b16;--card-bg:#0f1420;--border:#1a2040;
+            --text:#e2e8f0;--muted:#64748b;--green:#22c55e;--red:#ef4444;--accent:#38bdf8;
+        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{
+            font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+            background:var(--bg);
+            color:var(--text);
+            min-height:100vh;
+            background-image:
+                radial-gradient(ellipse at 20% 0%, rgba(56,189,248,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(129,140,248,0.05) 0%, transparent 50%);
+        }
+        .header{
+            text-align:center;padding:40px 20px 30px;
+            border-bottom:1px solid var(--border);
+            background:linear-gradient(180deg, rgba(15,20,40,0.9), transparent);
+        }
+        .header h1{
+            font-size:2.4em;font-weight:800;
+            background:linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+            letter-spacing:-0.5px;
+        }
+        .header .subtitle{color:var(--muted);margin-top:8px;font-size:1em}
+        .live-badge{
+            display:inline-block;background:rgba(34,197,94,0.15);color:var(--green);
+            padding:4px 12px;border-radius:20px;font-size:0.85em;font-weight:600;margin-top:10px;
+            animation:pulse 2s infinite;
+        }
+        .live-dot{display:inline-block;width:8px;height:8px;background:var(--green);border-radius:50%;margin-right:6px}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}
+        .container{max-width:1400px;margin:0 auto;padding:20px}
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:16px;margin-bottom:24px}
+        .card{
+            background:var(--card-bg);border:1px solid var(--border);border-radius:14px;
+            padding:24px;position:relative;overflow:hidden;
+            transition:transform 0.2s, border-color 0.2s;
+        }
+        .card:hover{transform:translateY(-2px);border-color:var(--accent)}
+        .card .value{font-size:2.2em;font-weight:800;letter-spacing:-1px}
+        .card .label{color:var(--muted);font-size:0.9em;margin-top:4px}
+        .sentiment-pill{
+            display:inline-block;padding:6px 16px;border-radius:999px;
+            font-weight:700;font-size:0.9em;margin-top:8px;
+        }
+        table{width:100%;border-collapse:collapse;background:var(--card-bg);border-radius:10px;overflow:hidden;margin-bottom:20px}
+        th{background:#1a2040;padding:12px;text-align:left;font-weight:600;color:var(--accent);font-size:0.85em;text-transform:uppercase;letter-spacing:0.5px}
+        td{padding:10px 12px;border-bottom:1px solid var(--border)}
+        tr:hover{background:rgba(56,189,248,0.05)}
+        .badge{padding:3px 8px;border-radius:12px;font-size:0.75em;font-weight:600}
+        .badge-high{background:#7f1d1d;color:#fca5a5}
+        .badge-medium{background:#78350f;color:#fcd34d}
+        .badge-low{background:#14532d;color:#86efac}
+        .badge-tier{background:#1e3a5f;color:#93c5fd}
+        .source-tag{font-size:0.75em;color:var(--muted);background:rgba(100,116,139,0.15);padding:2px 6px;border-radius:8px}
+        .gainer{color:#22c55e}.loser{color:#ef4444}
+        h2{margin:24px 0 12px;color:var(--text);font-size:1.2em;font-weight:700}
+        .section{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+        @media(max-width:768px){.section{grid-template-columns:1fr}}
+        .footer{text-align:center;padding:30px;color:var(--muted);margin-top:20px;border-top:1px solid var(--border)}
+        
+        /* Hawkeye scanner styles (injected) */
+        .hawkeye-scanner{margin:0 0 24px;padding:24px;border:1px solid rgba(56,189,248,.20);border-radius:28px;position:relative;overflow:hidden;text-align:left;background:linear-gradient(135deg,rgba(16,22,34,.92),rgba(18,14,33,.86) 48%,rgba(29,22,10,.76));box-shadow:0 22px 70px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.06)}
+        .hawkeye-scanner:before{content:"";position:absolute;inset:-1px;background:radial-gradient(circle at 16% 0%,rgba(56,189,248,.18),transparent 35%),radial-gradient(circle at 92% 14%,rgba(245,158,11,.12),transparent 28%);pointer-events:none}.hawkeye-scanner>*{position:relative}
+        .scanner-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.scanner-head h2{margin:0;color:var(--text);font-size:1.18rem;font-weight:950;letter-spacing:-.04em}.scanner-sub{margin:6px 0 0;color:var(--muted);font-size:.82rem;line-height:1.45}
+        .scanner-head .tier-legend{display:flex;gap:10px;flex-wrap:wrap;font-size:.74em;color:var(--muted)}.scanner-head .tier-legend span{padding:3px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.04)}
+        .scanner-board{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+        .signal-card{border:1px solid var(--border);border-radius:22px;padding:14px;background:rgba(7,9,20,.38);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.signal-card h3{margin:0 0 12px;color:var(--text);font-size:.98rem;font-weight:950;letter-spacing:-.025em}
+        .signal-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px;border:1px solid rgba(148,163,184,.16);border-radius:16px;background:rgba(255,255,255,.035);margin-top:9px}.signal-row:first-of-type{margin-top:0}
+        .asset-name{display:inline;font-weight:900;color:var(--text);line-height:1.15;margin-right:6px}
+        .asset-tag{display:inline-flex;vertical-align:middle;padding:2px 7px;border-radius:999px;background:rgba(56,189,248,.10);border:1px solid rgba(56,189,248,.22);color:#bae6fd;font-size:.66rem;font-weight:900;text-transform:uppercase}
+        .asset-meta{display:block;color:var(--muted);font-size:.74rem;margin-top:4px;line-height:1.35}
+        .asset-levels{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;font-size:.72rem;font-weight:850}
+        .asset-levels span{padding:4px 7px;border-radius:999px;background:rgba(15,23,42,.55);border:1px solid rgba(148,163,184,.16)}
+        .score-pill{display:inline-flex;align-items:center;justify-content:center;min-width:58px;padding:7px 9px;border-radius:999px;font-weight:950;font-size:.86rem;border:1px solid transparent}
+        .score-hot{color:#bbf7d0;background:rgba(34,197,94,.13);border-color:rgba(34,197,94,.22)}
+        .score-warm{color:#ffd699;background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.22)}
+        .score-muted{color:#cbd5e1;background:rgba(100,116,139,.10);border-color:rgba(100,116,139,.18)}
+        .momentum-empty{padding:16px;border:1px dashed var(--border);border-radius:18px;color:var(--muted);background:rgba(255,255,255,.025)}
+        @media(max-width:860px){.scanner-head{display:block}.scanner-board{grid-template-columns:1fr}}
+        @media(max-width:520px){.hawkeye-scanner{padding:16px;border-radius:22px}.signal-row{display:block}.signal-row>div:last-child{text-align:left!important;margin-top:10px}}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🦅 Atlas Nexus — Birdeye Sprint 4 + Hawkeye V4</h1>
+        <p class="subtitle">Multi-source crypto analytics pipeline with market pressure radar</p>
+        <div class="live-badge"><span class="live-dot"></span>Live · 20260515-152611</div>
+        <div class="sentiment-pill" style="background:rgba(239,68,68,0.15);color:#ef4444">
+            BEARISH · 37% confidence
+        </div>
+    </div>
+    
+    <div class="container">
+        
+<section class="momentum-scanner-v2 scanner hawkeye-scanner hawkeye-v4" aria-label="Hawkeye V4">
+  <style>
+    .hawkeye-scanner{margin:0 0 24px;padding:24px;border:1px solid rgba(56,189,248,.20);border-radius:28px;position:relative;overflow:hidden;text-align:left;background:linear-gradient(135deg,rgba(16,22,34,.92),rgba(18,14,33,.86) 48%,rgba(29,22,10,.76));box-shadow:0 22px 70px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.06)}
+    .hawkeye-scanner:before{content:"";position:absolute;inset:-1px;background:radial-gradient(circle at 16% 0%,rgba(56,189,248,.18),transparent 35%),radial-gradient(circle at 92% 14%,rgba(245,158,11,.12),transparent 28%);pointer-events:none}.hawkeye-scanner>*{position:relative}
+    .scanner-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.scanner-head h2{margin:0;color:var(--atlas-text,var(--text));font-size:1.18rem;font-weight:950;letter-spacing:-.04em}.scanner-sub{margin:6px 0 0;color:var(--muted);font-size:.82rem;line-height:1.45}
+    .scanner-head .tier-legend{display:flex;gap:10px;flex-wrap:wrap;font-size:.74em;color:var(--muted)}.scanner-head .tier-legend span{padding:3px 8px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.04)}.scanner-board{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .signal-card{border:1px solid var(--atlas-border,var(--border));border-radius:22px;padding:14px;background:rgba(7,9,20,.38);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.signal-card h3{margin:0 0 12px;color:var(--atlas-text,var(--text));font-size:.98rem;font-weight:950;letter-spacing:-.025em}
+    .signal-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px;border:1px solid rgba(148,163,184,.16);border-radius:16px;background:rgba(255,255,255,.035);margin-top:9px}.signal-row:first-of-type{margin-top:0}.asset-name{display:inline;font-weight:900;color:var(--atlas-text,var(--text));line-height:1.15;margin-right:6px}
+    .asset-tag{display:inline-flex;vertical-align:middle;padding:2px 7px;border-radius:999px;background:rgba(56,189,248,.10);border:1px solid rgba(56,189,248,.22);color:#bae6fd;font-size:.66rem;font-weight:900;text-transform:uppercase}.asset-meta{display:block;color:var(--atlas-muted,var(--muted));font-size:.74rem;margin-top:4px;line-height:1.35}
+    .asset-levels{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px;font-size:.72rem;font-weight:850}.asset-levels span{padding:4px 7px;border-radius:999px;background:rgba(15,23,42,.55);border:1px solid rgba(148,163,184,.16)}.score-pill{display:inline-flex;align-items:center;justify-content:center;min-width:58px;padding:7px 9px;border-radius:999px;font-weight:950;font-size:.86rem;border:1px solid transparent}
+    .score-hot{color:#bbf7d0;background:rgba(34,197,94,.13);border-color:rgba(34,197,94,.22)}.score-risk{color:#fecaca;background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.22)}.score-warm{color:#ffd699;background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.22)}.score-muted{color:#cbd5e1;background:rgba(100,116,139,.10);border-color:rgba(100,116,139,.18)}.momentum-empty{padding:16px;border:1px dashed var(--atlas-border,var(--border));border-radius:18px;color:var(--atlas-muted,var(--muted));background:rgba(255,255,255,.025)}
+    @media(max-width:860px){.scanner-head{display:block}.scanner-board{grid-template-columns:1fr}}@media(max-width:520px){.hawkeye-scanner{padding:16px;border-radius:22px}.signal-row{display:block}.signal-row>div:last-child{text-align:left!important;margin-top:10px}}
+  </style>
+  <div class="scanner-head"><div><h2>🦅 Hawkeye V4 — Market Pressure Radar</h2><p class="scanner-sub">Pressure, regime, normalized momentum and extension.</p></div><div class="tier-legend"><span>0-39 Weak</span><span>40-59 Watch</span><span>60-74 Active pressure</span><span>75-89 Strong pressure</span><span>90+ Extreme pressure</span><span>⚡ 0 · 🦅 0 · 👁️ 6</span></div></div>
+  <div class="scanner-board hawk-board"><div class="signal-card"><h3>📈 Bullish pressure (4)</h3><div class="signal-row hawk-row">
+<div>
+<span class="asset-name">OKB</span>
+<span class="asset-tag">Bullish pressure</span>
+<span class="asset-meta">crypto · uptrend · bullish continuation</span>
+<span class="asset-levels">
+<span style="color:#bae6fd">Reference price $85.83</span>
+<span style="color:#c4b5fd">nROC5 +0.01</span>
+<span style="color:#fbbf24">RSI 57</span>
+<span style="color:#fca5a5">Ext 0.1 ATR</span>
+<span style="color:#93c5fd">Range pct 65</span>
 
-    <!-- 🚨 UNUSUAL ACTIVITY (injected at pipeline runtime) -->
-    <section id="unusual-activity">
-    </section>
-   270|  <div class="error-banner" id="errorBanner"></div>
-   271|
-   272|  <!-- Stat Cards -->
-   273|  <div class="stats-grid" id="statsGrid">
-   274|    <div class="stat-card">
-   275|      <div class="icon">📊</div>
-   276|      <div class="value" style="color:var(--accent)" id="statTokens">--</div>
-   277|      <div class="label">Tokens Tracked</div>
-   278|    </div>
-   279|    <div class="stat-card">
-   280|      <div class="icon">📈</div>
-   281|      <div class="value" style="color:var(--green)" id="statUp">--</div>
-   282|      <div class="label">Gaining (24h)</div>
-   283|    </div>
-   284|    <div class="stat-card">
-   285|      <div class="icon">📉</div>
-   286|      <div class="value" style="color:var(--red)" id="statDown">--</div>
-   287|      <div class="label">Falling (24h)</div>
-   288|    </div>
-   289|    <div class="stat-card">
-   290|      <div class="icon">🌐</div>
-   291|      <div class="value" style="color:var(--accent2)" id="statMc">--</div>
-   292|      <div class="label">Total Market Cap</div>
-   293|    </div>
-   294|    <div class="stat-card">
-   295|      <div class="icon">💎</div>
-   296|      <div class="value" style="color:var(--orange)" id="statGems">--</div>
-   297|      <div class="label">Hidden Gems*</div>
-   298|      <div class="delta" style="color:var(--muted);font-size:0.75em">*Vol ↑ >2x avg, MCap <$500M</div>
-   299|    </div>
-   300|  </div>
-   301|
-   302|  <!-- Search & Filters -->
-   303|  <div class="controls">
-   304|    <input type="text" class="search-box" id="searchInput" placeholder="🔍 Search by name or symbol (e.g. ETH, Solana, PEPE)...">
-   305|    <button class="filter-btn active" data-filter="all">All</button>
-   306|    <button class="filter-btn" data-filter="gainers">📈 Gainers</button>
-   307|    <button class="filter-btn" data-filter="losers">📉 Losers</button>
-   308|    <button class="filter-btn" data-filter="large">🏦 Large Cap</button>
-   309|    <button class="filter-btn" data-filter="mid">🏗 Mid Cap</button>
-   310|    <button class="filter-btn" data-filter="small">🔬 Small Cap</button>
-   311|    <button class="filter-btn" data-filter="gems">💎 Hidden Gems</button>
-   312|    <button class="filter-btn" data-filter="highvol">⚡ High Vol</button>
-   313|  </div>
-   314|
-   315|  <!-- Market Cap Distribution Chart -->
-   316|  <div class="charts-grid">
-   317|    <div class="chart-card">
-   318|      <h3>📊 Market Cap Distribution</h3>
-   319|      <div class="chart-container"><canvas id="mcapChart"></canvas></div>
-   320|    </div>
-   321|    <div class="chart-card">
-   322|      <h3>🔥 Volatility Heatmap (24h)</h3>
-   323|      <div class="chart-container"><canvas id="volatilityChart"></canvas></div>
-   324|    </div>
-   325|    <div class="chart-card">
-   326|      <h3>📈 Top 10 by Market Cap</h3>
-   327|      <div class="chart-container"><canvas id="topMcapChart"></canvas></div>
-   328|    </div>
-   329|    <div class="chart-card">
-   330|      <h3>⚡ Momentum Score Distribution</h3>
-   331|      <div class="chart-container"><canvas id="momentumChart"></canvas></div>
-   332|    </div>
-   333|  </div>
-   334|
-   335|  <!-- Gainers & Losers -->
-   336|  <div class="gainers-losers">
-   337|    <div class="gl-card">
-   338|      <h3>🚀 Top 10 Gainers (24h)</h3>
-   339|      <div id="gainersList"></div>
-   340|    </div>
-   341|    <div class="gl-card">
-   342|      <h3>📉 Top 10 Losers (24h)</h3>
-   343|      <div id="losersList"></div>
-   344|    </div>
-   345|  </div>
-   346|
-   347|  <!-- Alerts -->
-   348|  <div class="alerts-section hidden" id="alertsSection">
-   349|    <h3>⚠️ Smart Alerts — Unusual Activity Detected</h3>
-   350|    <div id="alertsList"></div>
-   351|  </div>
-   352|
-   353|  <!-- Token Table -->
-   354|  <div class="table-wrapper">
-   355|    <table>
-   356|      <thead>
-   357|        <tr>
-   358|          <th data-sort="mcap_rank">#</th>
-   359|          <th data-sort="name">Token</th>
-   360|          <th data-sort="current_price">Price</th>
-   361|          <th data-sort="market_cap">Market Cap</th>
-   362|          <th data-sort="price_change_percentage_24h">24h Δ</th>
-   363|          <th data-sort="price_change_percentage_7d_in_currency">7d Δ</th>
-   364|          <th data-sort="volatility">Volatility</th>
-   365|          <th data-sort="momentum">Momentum</th>
-   366|          <th data-sort="total_volume">Volume 24h</th>
-   367|        </tr>
-   368|      </thead>
-   369|      <tbody id="tokenTableBody"></tbody>
-   370|    </table>
-   371|  </div>
-   372|  <div class="loading" id="loadingRow">Fetching live data from CoinGecko...</div>
-   373|
-   374|  <div class="footer">
-   375|    <p>🔮 Built for Birdeye Data BIP Sprint 4 by <strong>Atlas Nexus</strong></p>
-   376|    <p style="margin-top:4px">Multi-source pipeline: CoinGecko API · DEX Screener · Birdeye BDS | Data refreshes every 60s</p>
-   377|    <p style="margin-top:4px;font-size:0.8em"><a href="https://github.com/AtlasNexusOps/birdeye-sprint4" style="color:var(--accent)">github.com/AtlasNexusOps/birdeye-sprint4</a></p>
-   378|  </div>
-   379|</div>
-   380|
-   381|<script>
-   382|// ═══════════════════════════════════════════════════════
-   383|// ATLAS NEXUS — TOKEN INTELLIGENCE DASHBOARD
-   384|// Birdeye Data BIP Sprint 4
-   385|// ═══════════════════════════════════════════════════════
-   386|
-   387|const COINGECKO_API = 'https://api.coingecko.com/api/v3';
-   388|const CACHE_DURATION = 60000; // 60 seconds
-   389|let allTokens = [];
-   390|let activeFilter = 'all';
-   391|let sortField = 'market_cap';
-   392|let sortDir = 'desc';
-   393|let charts = {};
-   394|
-   395|// ── API Fetch ──
-   396|async function fetchWithCache(url, cacheKey) {
-   397|  const cached = sessionStorage.getItem(cacheKey);
-   398|  if (cached) {
-   399|    const { data, ts } = JSON.parse(cached);
-   400|    if (Date.now() - ts < CACHE_DURATION) return data;
-   401|  }
-   402|  try {
-   403|    const resp = await fetch(url);
-   404|    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-   405|    const data = await resp.json();
-   406|    sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
-   407|    return data;
-   408|  } catch (e) {
-   409|    console.warn(`Fetch failed for ${cacheKey}:`, e.message);
-   410|    const cached = sessionStorage.getItem(cacheKey);
-   411|    return cached ? JSON.parse(cached).data : null;
-   412|  }
-   413|}
-   414|
-   415|async function fetchAllData() {
-   416|  try {
-   417|    const [markets, global] = await Promise.all([
-   418|      fetchWithCache(
-   419|        `${COINGECKO_API}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true&price_change_percentage=24h,7d`,
-   420|        'cg_markets'
-   421|      ),
-   422|      fetchWithCache(`${COINGECKO_API}/global`, 'cg_global')
-   423|    ]);
-   424|
-   425|    document.getElementById('errorBanner').style.display = 'none';
-   426|
-   427|    if (!markets || !markets.length) {
-   428|      throw new Error('No market data returned');
-   429|    }
-   430|
-   431|    // Enrich data
-   432|    const enriched = markets.map((t, i) => {
-   433|      const change24 = t.price_change_percentage_24h || 0;
-   434|      const change7d = t.price_change_percentage_7d_in_currency || 0;
-   435|      const mcap = t.market_cap || 0;
-   436|      const vol = t.total_volume || 0;
-   437|
-   438|      let volatility = 'LOW';
-   439|      if (Math.abs(change24) > 10) volatility = 'HIGH';
-   440|      else if (Math.abs(change24) > 3) volatility = 'MEDIUM';
-   441|
-   442|      let tier = 'UNKNOWN';
-   443|      if (mcap > 10_000_000_000) tier = 'LARGE_CAP';
-   444|      else if (mcap > 1_000_000_000) tier = 'MID_CAP';
-   445|      else if (mcap > 100_000_000) tier = 'SMALL_CAP';
-   446|      else if (mcap > 0) tier = 'MICRO_CAP';
-   447|
-   448|      const momentum = (change24 * 0.6 + change7d * 0.4);
-   449|
-   450|      return {
-   451|        ...t,
-   452|        volatility,
-   453|        mcap_tier: tier,
-   454|        momentum_score: Math.round(momentum * 100) / 100,
-   455|        volume_mcap_ratio: mcap > 0 ? vol / mcap : 0,
-   456|        trend: change24 > 5 ? 'STRONG_UP' : change24 > 1 ? 'UP' : change24 < -5 ? 'STRONG_DOWN' : change24 < -1 ? 'DOWN' : 'FLAT'
-   457|      };
-   458|    });
-   459|
-   460|    return { tokens: enriched, global };
-   461|  } catch (e) {
-   462|    document.getElementById('errorBanner').style.display = 'block';
-   463|    document.getElementById('errorBanner').textContent = `⚠️ API Error: ${e.message}. Using cached data if available.`;
-   464|    return { tokens: [], global: null };
-   465|  }
-   466|}
-   467|
-   468|// ── Compute Stats ──
-   469|function computeStats(tokens) {
-   470|  const gainers = tokens.filter(t => (t.price_change_percentage_24h || 0) > 0).length;
-   471|  const losers = tokens.filter(t => (t.price_change_percentage_24h || 0) < 0).length;
-   472|  const totalMcap = tokens.reduce((s, t) => s + (t.market_cap || 0), 0);
-   473|  const avgVol = tokens.reduce((s, t) => s + (t.total_volume || 0), 0) / tokens.length;
-   474|  const gems = tokens.filter(t =>
-   475|    (t.total_volume || 0) > avgVol * 2 && (t.market_cap || 0) < 500_000_000 && (t.market_cap || 0) > 0
-   476|  );
-   477|
-   478|  return { total: tokens.length, gainers, losers, totalMcap, gems: gems.length, avgVol };
-   479|}
-   480|
-   481|// ── Update Stats Cards ──
-   482|function updateStats(stats) {
-   483|  document.getElementById('statTokens').textContent = stats.total;
-   484|  document.getElementById('statUp').textContent = stats.gainers;
-   485|  document.getElementById('statDown').textContent = stats.losers;
-   486|  document.getElementById('statMc').textContent = formatCurrency(stats.totalMcap);
-   487|  document.getElementById('statGems').textContent = stats.gems;
-   488|  document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
-   489|}
-   490|
-   491|// ── Update Gainers/Losers ──
-   492|function updateGainersLosers(tokens) {
-   493|  const sorted = [...tokens].sort((a, b) =>
-   494|    (b.price_change_percentage_24h || 0) - (a.price_change_percentage_24h || 0)
-   495|  );
-   496|
-   497|  const gainersEl = document.getElementById('gainersList');
-   498|  gainersEl.innerHTML = sorted.slice(0, 10).map((t, i) => {
-   499|    const rankClass = i === 0 ? 'rank-gold' : i === 1 ? 'rank-silver' : i === 2 ? 'rank-bronze' : 'rank-normal';
-   500|    return `<div class="gl-item">
-   501|
+</span>
+</div>
+<div style="text-align:right">
+<span class="score-pill score-warm">62/100</span>
+<div style="font-size:.72em;color:var(--muted);margin-top:3px">Net +42 · OKB</div>
+<div style="font-size:.7em;color:#f59e0b;margin-top:2px">👁️ Active pressure</div>
+</div>
+</div><div class="signal-row hawk-row">
+<div>
+<span class="asset-name">Flare</span>
+<span class="asset-tag">Bullish pressure</span>
+<span class="asset-meta">crypto · uptrend · bullish continuation</span>
+<span class="asset-levels">
+<span style="color:#bae6fd">Reference price $0.0097</span>
+<span style="color:#c4b5fd">nROC5 +0.21</span>
+<span style="color:#fbbf24">RSI 65</span>
+<span style="color:#fca5a5">Ext 0.9 ATR</span>
+<span style="color:#93c5fd">Range pct 100</span>
+
+</span>
+</div>
+<div style="text-align:right">
+<span class="score-pill score-warm">62/100</span>
+<div style="font-size:.72em;color:var(--muted);margin-top:3px">Net +46 · FLR</div>
+<div style="font-size:.7em;color:#f59e0b;margin-top:2px">👁️ Active pressure</div>
+</div>
+</div><div class="signal-row hawk-row">
+<div>
+<span class="asset-name">Gate</span>
+<span class="asset-tag">Bullish pressure</span>
+<span class="asset-meta">crypto · uptrend · bullish continuation</span>
+<span class="asset-levels">
+<span style="color:#bae6fd">Reference price $7.38</span>
+<span style="color:#c4b5fd">nROC5 +0.14</span>
+<span style="color:#fbbf24">RSI 65</span>
+<span style="color:#fca5a5">Ext 0.2 ATR</span>
+<span style="color:#93c5fd">Range pct 68</span>
+
+</span>
+</div>
+<div style="text-align:right">
+<span class="score-pill score-warm">62/100</span>
+<div style="font-size:.72em;color:var(--muted);margin-top:3px">Net +42 · GT</div>
+<div style="font-size:.7em;color:#f59e0b;margin-top:2px">👁️ Active pressure</div>
+</div>
+</div><div class="signal-row hawk-row">
+<div>
+<span class="asset-name">Provenance Blockchain</span>
+<span class="asset-tag">Bullish pressure</span>
+<span class="asset-meta">crypto · uptrend · bullish continuation</span>
+<span class="asset-levels">
+<span style="color:#bae6fd">Reference price $0.0114</span>
+<span style="color:#c4b5fd">nROC5 -0.04</span>
+<span style="color:#fbbf24">RSI 65</span>
+<span style="color:#fca5a5">Ext 0.6 ATR</span>
+<span style="color:#93c5fd">Range pct 62</span>
+
+</span>
+</div>
+<div style="text-align:right">
+<span class="score-pill score-warm">62/100</span>
+<div style="font-size:.72em;color:var(--muted);margin-top:3px">Net +42 · HASH</div>
+<div style="font-size:.7em;color:#f59e0b;margin-top:2px">👁️ Active pressure</div>
+</div>
+</div></div><div class="signal-card"><h3>📉 Bearish pressure (2)</h3><div class="signal-row hawk-row">
+<div>
+<span class="asset-name">Aster</span>
+<span class="asset-tag">Bearish pressure</span>
+<span class="asset-meta">crypto · downtrend · bearish continuation</span>
+<span class="asset-levels">
+<span style="color:#bae6fd">Reference price $0.6733</span>
+<span style="color:#c4b5fd">nROC5 +0.04</span>
+<span style="color:#fbbf24">RSI 39</span>
+<span style="color:#fca5a5">Ext 0.2 ATR</span>
+<span style="color:#93c5fd">Range pct 70</span>
+
+</span>
+</div>
+<div style="text-align:right">
+<span class="score-pill score-warm">62/100</span>
+<div style="font-size:.72em;color:var(--muted);margin-top:3px">Net -42 · ASTER</div>
+<div style="font-size:.7em;color:#f59e0b;margin-top:2px">👁️ Active pressure</div>
+</div>
+</div><div class="signal-row hawk-row">
+<div>
+<span class="asset-name">BFUSD</span>
+<span class="asset-tag">Bearish pressure</span>
+<span class="asset-meta">crypto · downtrend · bearish continuation</span>
+<span class="asset-levels">
+<span style="color:#bae6fd">Reference price $0.9992</span>
+<span style="color:#c4b5fd">nROC5 +0.00</span>
+<span style="color:#fbbf24">RSI 41</span>
+<span style="color:#fca5a5">Ext 0.0 ATR</span>
+<span style="color:#93c5fd">Range pct 52</span>
+
+</span>
+</div>
+<div style="text-align:right">
+<span class="score-pill score-warm">62/100</span>
+<div style="font-size:.72em;color:var(--muted);margin-top:3px">Net -42 · BFUSD</div>
+<div style="font-size:.7em;color:#f59e0b;margin-top:2px">👁️ Active pressure</div>
+</div>
+</div></div></div>
+</section>
+        
+<section class="unusual-activity" style="margin:0 0 24px;padding:18px;border:1px solid rgba(245,158,11,.28);border-radius:20px;background:rgba(245,158,11,.06)">
+<h2 style="margin:0 0 10px;font-size:1.05rem">🚨 Unusual market pressure</h2>
+<p style="margin:0 0 12px;color:var(--muted);font-size:.84rem">Extension, volatility or RSI readings that require manual chart inspection.</p>
+<div class='alert-row'><strong>BNB</strong><span>ATR pct 100</span></div><div class='alert-row'><strong>Hyperliquid</strong><span>ATR pct 96</span></div><div class='alert-row'><strong>Sui</strong><span>RSI 15 depressed</span></div><div class='alert-row'><strong>USD1</strong><span>ATR pct 100</span></div><div class='alert-row'><strong>Dai</strong><span>ATR pct 98</span></div><div class='alert-row'><strong>Ethena USDe</strong><span>ATR pct 98</span></div>
+</section>
+        
+        <!-- Market Stats -->
+        <div class="stats-grid">
+            <div class="card">
+                <div class="value" style="color:#38bdf8">107</div>
+                <div class="label">Tokens Analyzed</div>
+            </div>
+            <div class="card">
+                <div class="value" style="color:#22c55e">6</div>
+                <div class="label">Tokens Up (24h)</div>
+            </div>
+            <div class="card">
+                <div class="value" style="color:#ef4444">36</div>
+                <div class="label">Tokens Down (24h)</div>
+            </div>
+            <div class="card">
+                <div class="value" style="color:#f59e0b">-0.7%</div>
+                <div class="label">Avg 24h Change</div>
+            </div>
+            
+    <div class="card">
+        <div class="value" style="color:#818cf8">49.5</div>
+        <div class="label">🦅 Avg Pressure</div>
+    </div>
+    <div class="card">
+        <div class="value" style="color:#22c55e">24</div>
+        <div class="label">Bullish</div>
+    </div>
+    <div class="card">
+        <div class="value" style="color:#ef4444">63</div>
+        <div class="label">Bearish</div>
+    </div>
+    <div class="card">
+        <div class="value" style="color:#f59e0b">0</div>
+        <div class="label">⚠️ Strong/Extreme</div>
+    </div>
+        </div>
+        
+        <!-- Token Leaderboard -->
+        <h2>📊 Token Leaderboard (Hawkeye V4 Enhanced)</h2>
+        <div style="overflow-x: auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Token</th><th>Source</th><th>Price</th><th>Market Cap</th>
+                    <th>24h Δ</th><th>Vol</th><th>Tier</th><th>Mom</th>
+                    <th>🦅 Score</th><th>Signal</th>
+                </tr>
+            </thead>
+            <tbody>
+        <tr>
+            <td><strong>BTC</strong> <small>Bitcoin</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$80,141.0000</td>
+            <td>$1,605,184.3M</td>
+            <td style="color:#22c55e">▲ 0.31%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>0.1</td>
+            <td style="color:#64748b;font-weight:700">⚪ 46</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>ETH</strong> <small>Ethereum</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$2,248.9200</td>
+            <td>$271,406.1M</td>
+            <td style="color:#ef4444">▼ -0.50%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>-1.1</td>
+            <td style="color:#64748b;font-weight:700">🔴 50</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>USDT</strong> <small>Tether</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.9997</td>
+            <td>$189,801.4M</td>
+            <td style="color:#22c55e">▲ 0.01%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>0.0</td>
+            <td style="color:#64748b;font-weight:700">🟢 48</td>
+            <td><small style="color:#94a3b8">bullish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>BNB</strong> <small>BNB</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$681.7800</td>
+            <td>$91,898.7M</td>
+            <td style="color:#22c55e">▲ 0.93%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>3.2</td>
+            <td style="color:#64748b;font-weight:700">🟢 58</td>
+            <td><small style="color:#94a3b8">bullish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>XRP</strong> <small>XRP</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$1.4600</td>
+            <td>$90,068.7M</td>
+            <td style="color:#22c55e">▲ 0.22%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>2.1</td>
+            <td style="color:#64748b;font-weight:700">⚪ 46</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>USDC</strong> <small>USDC</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.9998</td>
+            <td>$76,527.8M</td>
+            <td style="color:#ef4444">▼ -0.01%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>-0.0</td>
+            <td style="color:#64748b;font-weight:700">🔴 54</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>SOL</strong> <small>Solana</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$90.5000</td>
+            <td>$52,311.7M</td>
+            <td style="color:#ef4444">▼ -0.88%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>0.4</td>
+            <td style="color:#64748b;font-weight:700">🔴 54</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>TRX</strong> <small>TRON</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.3518</td>
+            <td>$33,353.0M</td>
+            <td style="color:#ef4444">▼ -0.84%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>-0.1</td>
+            <td style="color:#64748b;font-weight:700">🔴 55</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>FIGR_HELOC</strong> <small>Figure Heloc</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$1.0330</td>
+            <td>$18,351.4M</td>
+            <td style="color:#ef4444">▼ -0.07%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>1.2</td>
+            <td style="color:#64748b;font-weight:700">🔴 54</td>
+            <td><small style="color:#94a3b8">compression </small></td>
+        </tr>
+        <tr>
+            <td><strong>DOGE</strong> <small>Dogecoin</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.1140</td>
+            <td>$17,579.8M</td>
+            <td style="color:#ef4444">▼ -1.38%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>1.6</td>
+            <td style="color:#64748b;font-weight:700">⚪ 46</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>WBT</strong> <small>WhiteBIT Coin</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$58.7600</td>
+            <td>$12,499.4M</td>
+            <td style="color:#22c55e">▲ 0.03%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>-0.2</td>
+            <td style="color:#64748b;font-weight:700">🔴 55</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>USDS</strong> <small>USDS</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.9997</td>
+            <td>$11,115.1M</td>
+            <td style="color:#ef4444">▼ -0.00%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>-0.0</td>
+            <td style="color:#64748b;font-weight:700">🔴 49</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>HYPE</strong> <small>Hyperliquid</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$43.3800</td>
+            <td>$10,333.9M</td>
+            <td style="color:#22c55e">▲ 5.82%</td>
+            <td><span class="badge badge-medium">MEDIUM</span></td>
+            <td><span class="badge badge-tier">LARGE_CAP</span></td>
+            <td>4.3</td>
+            <td style="color:#64748b;font-weight:700">🟢 58</td>
+            <td><small style="color:#94a3b8">bullish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>ADA</strong> <small>Cardano</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.2648</td>
+            <td>$9,794.7M</td>
+            <td style="color:#ef4444">▼ -0.91%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-0.5</td>
+            <td style="color:#64748b;font-weight:700">🔴 55</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>LEO</strong> <small>LEO Token</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$10.2000</td>
+            <td>$9,391.5M</td>
+            <td style="color:#22c55e">▲ 0.49%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-0.4</td>
+            <td style="color:#64748b;font-weight:700">🟢 57</td>
+            <td><small style="color:#94a3b8">bullish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>ZEC</strong> <small>Zcash</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$528.9900</td>
+            <td>$8,826.4M</td>
+            <td style="color:#22c55e">▲ 0.35%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-2.9</td>
+            <td style="color:#64748b;font-weight:700">🔴 58</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>BCH</strong> <small>Bitcoin Cash</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$430.3800</td>
+            <td>$8,622.3M</td>
+            <td style="color:#ef4444">▼ -0.83%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-2.3</td>
+            <td style="color:#64748b;font-weight:700">🔴 55</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>LINK</strong> <small>Chainlink</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$10.2400</td>
+            <td>$7,445.9M</td>
+            <td style="color:#ef4444">▼ -0.83%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>0.8</td>
+            <td style="color:#64748b;font-weight:700">🔴 58</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>XMR</strong> <small>Monero</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$384.6600</td>
+            <td>$7,096.4M</td>
+            <td style="color:#ef4444">▼ -3.51%</td>
+            <td><span class="badge badge-medium">MEDIUM</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-3.4</td>
+            <td style="color:#64748b;font-weight:700">🔴 50</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>CC</strong> <small>Canton</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.1601</td>
+            <td>$6,170.7M</td>
+            <td style="color:#ef4444">▼ -4.44%</td>
+            <td><span class="badge badge-medium">MEDIUM</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>1.5</td>
+            <td style="color:#64748b;font-weight:700">⚪ 46</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>TON</strong> <small>Toncoin</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$2.0400</td>
+            <td>$5,488.5M</td>
+            <td style="color:#ef4444">▼ -3.71%</td>
+            <td><span class="badge badge-medium">MEDIUM</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-10.5</td>
+            <td style="color:#64748b;font-weight:700">🔴 54</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>XLM</strong> <small>Stellar</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.1587</td>
+            <td>$5,308.7M</td>
+            <td style="color:#ef4444">▼ -1.57%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-1.1</td>
+            <td style="color:#64748b;font-weight:700">🔴 50</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>SUI</strong> <small>Sui</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$1.1200</td>
+            <td>$4,501.1M</td>
+            <td style="color:#ef4444">▼ -7.67%</td>
+            <td><span class="badge badge-medium">MEDIUM</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>1.1</td>
+            <td style="color:#64748b;font-weight:700">🔴 35</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>USD1</strong> <small>USD1</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.9997</td>
+            <td>$4,474.5M</td>
+            <td style="color:#22c55e">▲ 0.02%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>0.0</td>
+            <td style="color:#64748b;font-weight:700">🟢 58</td>
+            <td><small style="color:#94a3b8">bullish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>LTC</strong> <small>Litecoin</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$57.7200</td>
+            <td>$4,453.7M</td>
+            <td style="color:#22c55e">▲ 0.49%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>1.1</td>
+            <td style="color:#64748b;font-weight:700">🟢 52</td>
+            <td><small style="color:#94a3b8">bullish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>DAI</strong> <small>Dai</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.9998</td>
+            <td>$4,387.9M</td>
+            <td style="color:#22c55e">▲ 0.01%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>0.0</td>
+            <td style="color:#64748b;font-weight:700">🟢 53</td>
+            <td><small style="color:#94a3b8">bullish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>USDE</strong> <small>Ethena USDe</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$1.0000</td>
+            <td>$4,231.8M</td>
+            <td style="color:#22c55e">▲ 0.01%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>0.0</td>
+            <td style="color:#64748b;font-weight:700">⚪ 40</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>M</strong> <small>MemeCore</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$3.2200</td>
+            <td>$4,196.9M</td>
+            <td style="color:#ef4444">▼ -3.99%</td>
+            <td><span class="badge badge-medium">MEDIUM</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-7.5</td>
+            <td style="color:#64748b;font-weight:700">🔴 58</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>AVAX</strong> <small>Avalanche</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$9.7200</td>
+            <td>$4,193.8M</td>
+            <td style="color:#ef4444">▼ -0.82%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>0.0</td>
+            <td style="color:#64748b;font-weight:700">🔴 55</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>HBAR</strong> <small>Hedera</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.0930</td>
+            <td>$4,032.5M</td>
+            <td style="color:#ef4444">▼ -1.30%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>0.1</td>
+            <td style="color:#64748b;font-weight:700">🔴 51</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>SHIB</strong> <small>Shiba Inu</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.0000</td>
+            <td>$3,674.3M</td>
+            <td style="color:#ef4444">▼ -1.06%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-1.2</td>
+            <td style="color:#64748b;font-weight:700">🔴 50</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>RAIN</strong> <small>Rain</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.0074</td>
+            <td>$3,530.6M</td>
+            <td style="color:#ef4444">▼ -1.80%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-1.9</td>
+            <td style="color:#64748b;font-weight:700">🔴 38</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>PYUSD</strong> <small>PayPal USD</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.9998</td>
+            <td>$3,462.9M</td>
+            <td style="color:#ef4444">▼ -0.02%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-0.0</td>
+            <td style="color:#64748b;font-weight:700">🟢 49</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>USDG</strong> <small>Global Dollar</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.9998</td>
+            <td>$3,340.8M</td>
+            <td style="color:#22c55e">▲ 0.02%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>0.0</td>
+            <td style="color:#64748b;font-weight:700">🔴 54</td>
+            <td><small style="color:#94a3b8">compression </small></td>
+        </tr>
+        <tr>
+            <td><strong>CRO</strong> <small>Cronos</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.0744</td>
+            <td>$3,243.3M</td>
+            <td style="color:#ef4444">▼ -0.37%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>2.5</td>
+            <td style="color:#64748b;font-weight:700">🔴 59</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>USYC</strong> <small>Circle USYC</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$1.1200</td>
+            <td>$2,988.6M</td>
+            <td style="color:#6b7280">— 0.00%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>0.0</td>
+            <td style="color:#64748b;font-weight:700">⚪ 40</td>
+            <td><small style="color:#94a3b8">degraded / u</small></td>
+        </tr>
+        <tr>
+            <td><strong>TAO</strong> <small>Bittensor</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$297.4400</td>
+            <td>$2,858.0M</td>
+            <td style="color:#ef4444">▼ -1.41%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-2.3</td>
+            <td style="color:#64748b;font-weight:700">🔴 59</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>XAUT</strong> <small>Tether Gold</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$4,554.7300</td>
+            <td>$2,697.8M</td>
+            <td style="color:#ef4444">▼ -2.82%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-3.0</td>
+            <td style="color:#64748b;font-weight:700">🔴 38</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>BUIDL</strong> <small>BlackRock USD Instit</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$1.0000</td>
+            <td>$2,449.3M</td>
+            <td style="color:#6b7280">— 0.00%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>0.0</td>
+            <td style="color:#64748b;font-weight:700">⚪ 40</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>UNI</strong> <small>Uniswap</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$3.6700</td>
+            <td>$2,330.7M</td>
+            <td style="color:#22c55e">▲ 0.82%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>2.3</td>
+            <td style="color:#64748b;font-weight:700">🔴 59</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>DOT</strong> <small>Polkadot</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$1.3300</td>
+            <td>$2,240.2M</td>
+            <td style="color:#ef4444">▼ -0.88%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>0.0</td>
+            <td style="color:#64748b;font-weight:700">🔴 46</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>MNT</strong> <small>Mantle</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.6719</td>
+            <td>$2,217.5M</td>
+            <td style="color:#ef4444">▼ -0.95%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-0.3</td>
+            <td style="color:#64748b;font-weight:700">⚪ 40</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>PAXG</strong> <small>PAX Gold</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$4,555.2400</td>
+            <td>$2,142.1M</td>
+            <td style="color:#ef4444">▼ -2.80%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-3.0</td>
+            <td style="color:#64748b;font-weight:700">🔴 38</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>WLFI</strong> <small>World Liberty Financ</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.0671</td>
+            <td>$2,131.7M</td>
+            <td style="color:#ef4444">▼ -1.23%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-4.5</td>
+            <td style="color:#64748b;font-weight:700">🔴 47</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>NEAR</strong> <small>NEAR Protocol</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$1.5400</td>
+            <td>$1,995.4M</td>
+            <td style="color:#ef4444">▼ -1.74%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-1.2</td>
+            <td style="color:#64748b;font-weight:700">🔴 54</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>USDY</strong> <small>Ondo US Dollar Yield</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$1.1300</td>
+            <td>$1,895.3M</td>
+            <td style="color:#ef4444">▼ -0.16%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-0.0</td>
+            <td style="color:#64748b;font-weight:700">🟢 46</td>
+            <td><small style="color:#94a3b8">range pressu</small></td>
+        </tr>
+        <tr>
+            <td><strong>ONDO</strong> <small>Ondo</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.3774</td>
+            <td>$1,834.6M</td>
+            <td style="color:#ef4444">▼ -2.54%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-3.5</td>
+            <td style="color:#64748b;font-weight:700">🔴 50</td>
+            <td><small style="color:#94a3b8">bearish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>OKB</strong> <small>OKB</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$85.6100</td>
+            <td>$1,797.6M</td>
+            <td style="color:#22c55e">▲ 0.90%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>0.6</td>
+            <td style="color:#f59e0b;font-weight:700">🟢 62</td>
+            <td><small style="color:#94a3b8">bullish cont</small></td>
+        </tr>
+        <tr>
+            <td><strong>USDF</strong> <small>Falcon USD</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.9987</td>
+            <td>$1,780.8M</td>
+            <td style="color:#22c55e">▲ 0.05%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>0.1</td>
+            <td style="color:#64748b;font-weight:700">🟢 52</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr>
+        <tr>
+            <td><strong>HTX</strong> <small>HTX DAO</small></td>
+            <td><span class="source-tag">coingecko</span></td>
+            <td>$0.0000</td>
+            <td>$1,778.2M</td>
+            <td style="color:#ef4444">▼ -0.21%</td>
+            <td><span class="badge badge-low">LOW</span></td>
+            <td><span class="badge badge-tier">MID_CAP</span></td>
+            <td>-0.2</td>
+            <td style="color:#64748b;font-weight:700">🔴 50</td>
+            <td><small style="color:#94a3b8">mixed / no e</small></td>
+        </tr></tbody>
+        </table>
+        </div>
+        
+        <!-- Top Gainers / Losers -->
+        <div class="section">
+            <div>
+                <h2>🚀 Top Gainers</h2>
+                <table>
+                    <tr><th>Token</th><th>24h</th><th>Price</th></tr>
+                    <tr><td><strong>FLR</strong></td><td class="gainer">▲ 8.0%</td><td>$0.0095</td></tr><tr><td><strong>HYPE</strong></td><td class="gainer">▲ 5.8%</td><td>$43.3800</td></tr><tr><td><strong>HASH</strong></td><td class="gainer">▲ 5.5%</td><td>$0.0114</td></tr><tr><td><strong>XDC</strong></td><td class="gainer">▲ 4.7%</td><td>$0.0352</td></tr><tr><td><strong>DEXE</strong></td><td class="gainer">▲ 4.2%</td><td>$13.1300</td></tr>
+                </table>
+            </div>
+            <div>
+                <h2>📉 Top Losers</h2>
+                <table>
+                    <tr><th>Token</th><th>24h</th><th>Price</th></tr>
+                    <tr><td><strong>STABLE</strong></td><td class="loser">▼ -9.6%</td><td>$0.0372</td></tr><tr><td><strong>ICP</strong></td><td class="loser">▼ -8.5%</td><td>$2.6700</td></tr><tr><td><strong>SUI</strong></td><td class="loser">▼ -7.7%</td><td>$1.1200</td></tr><tr><td><strong>CC</strong></td><td class="loser">▼ -4.4%</td><td>$0.1601</td></tr><tr><td><strong>M</strong></td><td class="loser">▼ -4.0%</td><td>$3.2200</td></tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Hawkeye Top Pressure -->
+        <div class="section">
+            <div>
+                <h2>🟢 Top Bullish Pressure</h2>
+                <table>
+                    <tr><th>Token</th><th>Score</th><th>Signal</th></tr>
+                    <tr><td><strong>OKB</strong></td><td style="color:#22c55e;font-weight:700">62/100</td><td><small>bullish continuation</small></td></tr><tr><td><strong>FLR</strong></td><td style="color:#22c55e;font-weight:700">62/100</td><td><small>bullish continuation</small></td></tr><tr><td><strong>GT</strong></td><td style="color:#22c55e;font-weight:700">62/100</td><td><small>bullish continuation</small></td></tr><tr><td><strong>HASH</strong></td><td style="color:#22c55e;font-weight:700">62/100</td><td><small>bullish continuation</small></td></tr>
+                </table>
+            </div>
+            <div>
+                <h2>🔴 Top Bearish Pressure</h2>
+                <table>
+                    <tr><th>Token</th><th>Score</th><th>Signal</th></tr>
+                    <tr><td><strong>ASTER</strong></td><td style="color:#ef4444;font-weight:700">62/100</td><td><small>bearish continuation</small></td></tr><tr><td><strong>BFUSD</strong></td><td style="color:#ef4444;font-weight:700">62/100</td><td><small>bearish continuation</small></td></tr>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Unusual Volume -->
+        <h2>⚠️ Unusual Volume (5 tokens)</h2>
+        <table><tr><th>Token</th><th>Volume</th><th>Mcap</th><th>Ratio</th></tr>
+        <tr><td><strong>BTC</strong></td><td>$45,335,580,377</td><td>$1605184.3M</td><td>2.82%</td></tr><tr><td><strong>ETH</strong></td><td>$19,298,692,227</td><td>$271406.1M</td><td>7.11%</td></tr><tr><td><strong>USDT</strong></td><td>$75,495,066,783</td><td>$189801.4M</td><td>39.78%</td></tr><tr><td><strong>XRP</strong></td><td>$4,125,021,685</td><td>$90068.7M</td><td>4.58%</td></tr><tr><td><strong>USDC</strong></td><td>$17,314,864,702</td><td>$76527.8M</td><td>22.63%</td></tr>
+        </table>
+    </div>
+    
+    <div class="footer">
+        <p>🦅 Built for Birdeye Data BIP Sprint 4 by Atlas Nexus</p>
+        <p style="font-size:0.8em">Multi-source pipeline: CoinGecko + DEX Screener + Birdeye BDS · Hawkeye V4 Market Pressure Radar · 20260515-152611</p>
+    </div>
+</body>
+</html>
