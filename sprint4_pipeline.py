@@ -461,6 +461,21 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
         f"<td>{uv.get('volume_mcap_ratio',0):.2%}</td></tr>"
         for uv in summary.get('volume_share_tokens', summary.get('unusual_volume_tokens', []))[:5]
     )
+    top_gainer = summary.get('top_gainers', [{}])[0] if summary.get('top_gainers') else {}
+    top_loser = summary.get('top_losers', [{}])[0] if summary.get('top_losers') else {}
+    top_gainer_card = f"""
+    <div class="card">
+        <div class="value" style="color:#22c55e">{top_gainer.get('symbol','—')}</div>
+        <div class="label">🚀 Top Gainer</div>
+        <div class="subvalue">▲ {(top_gainer.get('change_24h',0) or 0):.1f}% · ${((top_gainer.get('price_usd',0) or 0)):,.4f}</div>
+    </div>""" if top_gainer else ""
+    top_loser_card = f"""
+    <div class="card">
+        <div class="value" style="color:#ef4444">{top_loser.get('symbol','—')}</div>
+        <div class="label">📉 Top Loser</div>
+        <div class="subvalue">▼ {(top_loser.get('change_24h',0) or 0):.1f}% · ${((top_loser.get('price_usd',0) or 0)):,.4f}</div>
+    </div>""" if top_loser else ""
+    
     hawk_cards = f"""
     <div class="card">
         <div class="value" style="color:#818cf8">{hk.get('avg_pressure_score','—')}</div>
@@ -565,6 +580,7 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
         .card:hover{{transform:translateY(-2px);border-color:var(--accent)}}
         .card .value{{font-size:2.2em;font-weight:800;letter-spacing:-1px}}
         .card .label{{color:var(--muted);font-size:0.9em;margin-top:4px}}
+        .card .subvalue{{color:var(--muted);font-size:0.78em;margin-top:6px;font-weight:700;letter-spacing:.02em}}
         .sentiment-pill{{
             display:inline-block;padding:6px 16px;border-radius:999px;
             font-weight:700;font-size:0.9em;margin-top:8px;
@@ -639,6 +655,8 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
                 <div class="value" style="color:#f59e0b">{summary['avg_24h_change']}%</div>
                 <div class="label">Avg 24h Change</div>
             </div>
+            {top_gainer_card}
+            {top_loser_card}
             {hawk_cards}
         </div>
         
