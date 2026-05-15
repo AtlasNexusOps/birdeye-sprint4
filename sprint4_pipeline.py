@@ -493,7 +493,7 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🦅 Atlas Nexus — Birdeye Sprint 4 + Hawkeye V4</title>
+    <title>🔮 Atlas Nexus — Birdeye Sprint 4 | Hawkeye V4</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
 
@@ -532,12 +532,18 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
             background:linear-gradient(180deg, rgba(15,20,40,0.9), transparent);
         }}
         .header h1{{
-            font-size:2.4em;font-weight:800;
-            background:linear-gradient(135deg, var(--accent), var(--accent2));
-            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-            letter-spacing:-0.5px;
+            display:flex;flex-direction:column;align-items:center;gap:10px;
+            font-size:clamp(2.7rem,7vw,5.8rem);font-weight:900;line-height:.94;
+            background:linear-gradient(135deg, #fff, var(--accent), var(--accent2));
+            -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+            letter-spacing:-0.085em;
         }}
-        .header .subtitle{{color:var(--muted);margin-top:8px;font-size:1em}}
+        .header h1 .title-orb{{
+            display:block;font-size:clamp(4.2rem,11vw,8.4rem);line-height:.82;letter-spacing:0;
+            -webkit-text-fill-color:initial;background:none;
+            filter:drop-shadow(0 0 28px rgba(129,140,248,.55)) drop-shadow(0 0 52px rgba(56,189,248,.30));
+        }}
+        .header .subtitle{{color:var(--muted);margin-top:10px;font-size:1.08em}}
         .live-badge{{
             display:inline-block;background:rgba(34,197,94,0.15);color:var(--green);
             padding:4px 12px;border-radius:20px;font-size:0.85em;font-weight:600;margin-top:10px;
@@ -599,8 +605,8 @@ def export_html_dashboard(tokens: list, summary: dict, filename: str):
 </head>
 <body>
     <div class="header">
-        <h1>🦅 Atlas Nexus — Birdeye Sprint 4 + Hawkeye V4</h1>
-        <p class="subtitle">Multi-source crypto analytics pipeline with market pressure radar</p>
+        <h1><span class="title-orb">🔮</span><span>Atlas Nexus — Birdeye Sprint 4</span></h1>
+        <p class="subtitle">Hawkeye V4 Market Pressure Radar · Multi-source crypto intelligence pipeline</p>
         <div class="live-badge"><span class="live-dot"></span>Live · {NOW}</div>
         <div class="sentiment-pill" style="background:rgba({ '34,197,94' if 'BULLISH' in agg.get('direction','') else '239,68,68' if 'BEARISH' in agg.get('direction','') else '245,158,11' },0.15);color:{sentiment_color}">
             {agg.get('direction','NEUTRAL')} · {agg.get('confidence','—')}% confidence
