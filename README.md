@@ -1,5 +1,8 @@
 # 🦅 Atlas Nexus — Birdeye Data BIP Sprint 4 Enhanced
 
+[![CI](https://github.com/AtlasNexusOps/birdeye-sprint4/actions/workflows/ci.yml/badge.svg)](https://github.com/AtlasNexusOps/birdeye-sprint4/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](https://opensource.org/licenses/MIT)
+
+
 **Multi-source crypto analytics pipeline + Hawkeye V4 Market Pressure Radar**
 
 Built for the [Birdeye Data 4-Week BIP Competition Sprint 4](https://superteam.fun/earn/listing/birdeye-data-4-week-bip-competition-sprint-4)  
